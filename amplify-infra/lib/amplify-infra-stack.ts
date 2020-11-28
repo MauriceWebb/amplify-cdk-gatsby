@@ -1,5 +1,4 @@
 import * as cdk from '@aws-cdk/core';
-import * as codecommit from '@aws-cdk/aws-codecommit'
 import * as amplify from '@aws-cdk/aws-amplify'
 
 export class AmplifyInfraStack extends cdk.Stack {
@@ -7,13 +6,23 @@ export class AmplifyInfraStack extends cdk.Stack {
     super(scope, id, props);
 
     // Source control repository:
-    const amplifyCdkGatsbyRepo = new codecommit.Repository(
+    const amplifyCdkGatsbyAppRepo = new amplify.App(
       this,
-      'AmplifyCdkGatsbyRepo',
+      'amplify-cdk-gatsby-app-repo',
       {
-        repositoryName: 'amplify-cdk-gatsby-repo',
-        description: 'Codecommit repository that will be used as the source repository for the gatsby app and cdk app project'
+        sourceCodeProvider: new amplify.GitHubSourceCodeProvider({
+          owner: 'MauriceWebb',
+          repository: 'amplify-cdk-gatsby',
+          oauthToken: cdk.SecretValue.secretsManager(
+            'global/gitHubPAT', // secret-name
+            {
+              jsonField: 'gitHubPAT' // secret-key
+            }
+          )
+        })
       }
     )
+
+    const masterBranch = amplifyCdkGatsbyAppRepo.addBranch('master')
   }
 }
